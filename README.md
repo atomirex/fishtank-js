@@ -6,7 +6,7 @@ Very inspired by the work of [Johnny Lee with the head tracking using the Wii se
 The actual core code here is amazingly short, so don't be scared.
 
 ## Running it
-The easiest way is to check this link to the running example: (TO BE ADDED)
+The easiest way is to check this link to the running [example](https://atomirex.github.io/fishtank-js/dist/index.html).
 
 ### The settings
 The more accurate your settings the better the effect.
@@ -31,6 +31,7 @@ The more accurate your settings the better the effect.
 - The maths is likely to have subtle bugs and precision errors.
 - Cameras are either in the centre above or below the screen. No consideration for other configurations.
 - Once set at the start the current camera is unalterable. Some attention to teardown and recreation of the streams and so on is required.
+- Sometimes the camera gets stuck. This can be resolved either by reopening in a whole new window or pulling the frozen tab out of the browser.
 - The interactions with the reloading mechanism of the dev server get old fast. Whenever you save a file it will break any current active session.
 - I would want to break out the classes HeadTracker and FishtankCamera into another module which could then go on npm with clearing versioning and licensing etc. The example uses an hdr env map from three.js which is cheeky to say the least and should be changed.
 - The results of the face detection are shaky. It may be possible to filter them for some applications, but that would introduce latency. It is probably better to hope for improvements in resolution and accuracy in the face detection as things like WebGPU get deployed and that becomes more reasonable. Relatedly, the range in distance from the camera is currently limited. There may be good mileage from switching to a pose detection mechanism, depending on the stability of the output of the pose inference.
