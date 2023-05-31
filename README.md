@@ -3,7 +3,7 @@ Provides a webcam driven parallax effect simulating the feeling of looking throu
 
 Very inspired by the work of [Johnny Lee with the head tracking using the Wii sensor bar](http://johnnylee.net/projects/wii/) I hacked up a proof of concept for doing this on the web using no extra hardware and just [Google MediaPipe](https://developers.google.com/mediapipe) and the 3D graphics library [three.js](https://threejs.org). The result is an unholy fusion of mediapipe face detection, three.js example code and some modified mathematics originally by Mr Lee. It is definitely not production ready, largely due to typical media lifecycle problems, but does show that this is viable.
 
-The actual core code here is amazingly short.
+The actual core code here is amazingly short, so don't be scared.
 
 ## Running it
 The easiest way is to check this link to the running example: (TO BE ADDED)

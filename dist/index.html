@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 - Local Server</title>
+
+
+  <script type="module" crossorigin src="./assets/index-c8a6d4bd.js"></script>
+  <link rel="stylesheet" href="./assets/index-f723b8e2.css">
+</head>
+<body onload="start();">
+    <canvas id="canvas"></canvas>
+    <video id="camera" autoplay playsinline></video>
+
+    <div id="controls">        
+        <table>
+            <tr><td class="td-entry-category">Camera</td><td></td></tr>
+            <tr><td class="td-entry"><select name="cameras" id="camera-selector">
+                <option value="none">No camera found</option>
+            </select></td><td></td></tr>
+            <tr><td class="td-entry"><input id="camera-fov-deg" style="width: 48px" type="number" min="0" max="90" value="40" /></td><td>FOV (degrees)</td></tr>
+            <tr><td class="td-entry"><input id="camera-above-screen" type="checkbox" value="true" checked="true" /></td><td>Above screen</td></tr>
+            <tr><td class="spacer-row"></td><td></td></tr>
+            <tr><td class="td-entry-category">Display</td><td></td></tr>
+            <tr><td class="td-entry"><input id="display-height-mm" style="width: 48px" type="number" min="0" max="2000" value="200" /></td><td>Height (mm)</td></tr>
+            <tr><td class="spacer-row"></td><td></td></tr>
+            <tr><td class="td-entry-category">Viewer</td><td></td></tr>
+            <tr><td class="td-entry"><input id="viewer-inter-eye-distance-mm" style="width: 48px" type="number" min="0" max="200" value="100" /></td><td>Inter eye distance (mm)</td></tr>
+            <tr><td class="spacer-row"></td><td></td></tr>
+            <tr><td class="td-entry"><input type="button" value="START" id="start-button"></td><td></td></tr>
+        </table>
+    </div>
+</body>
+</html>
