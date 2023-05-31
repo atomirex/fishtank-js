@@ -1,0 +1,43 @@
+* {
+    font-family: sans-serif;
+}
+
+td {
+    font-size: 12px;
+    color: white;
+    vertical-align: top;
+}
+
+body {
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+}
+
+#main-canvas {
+    width: 100vw;
+    height: 100vh;
+}
+
+.spacer-row {
+    height: 8px;
+}
+
+.td-entry {
+    text-align: right;
+}
+
+.td-entry-category {
+    text-align: right;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#controls {
+    position: absolute;
+    padding: 16px;
+    top: 32px;
+    left: 32px;
+    width: 240px;
+    background-color: rgba(64, 64, 64, 0.35);
+}
