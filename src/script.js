@@ -120,18 +120,12 @@ class HeadTracker {
     
         var that = this;
         window.requestAnimationFrame(function() {
+            console.log("Detect frame callback");
             that.detect();
         });   
     }
-    
-    async start() {
-        //
-        // This totally isn't production ready, largely because of this section.
-        //
-        // Some much cleaner disposal/recreation is necessary
-        //
-        var that = this;
 
+    async init() {
         const visionTasks = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
 
         this.faceDetector = await FaceDetector.createFromOptions(visionTasks, {
@@ -141,6 +135,15 @@ class HeadTracker {
             },
             runningMode: "IMAGE"
         });
+    }
+    
+    async start() {
+        //
+        // This totally isn't production ready, largely because of this section.
+        //
+        // Some much cleaner disposal/recreation is necessary
+        //
+        var that = this;
 
         const constraints = {
             video: (that.settings.cameraDeviceId == null ? true : {deviceId: that.settings.cameraDeviceId})
@@ -286,6 +289,10 @@ function setupControls() {
 export async function start() {
     setupControls();
 
+    const startButton = document.getElementById("start-button");
+    startButton.disabled = true;
+    await headTracker.init();
+
     const canvas = document.getElementById("canvas");
     const renderer = new THREE.WebGLRenderer({ canvas: canvas });
 
@@ -397,6 +404,8 @@ export async function start() {
     }
 
     step();
+
+    startButton.disabled = false;
 }
 
 document.body.onload = start;

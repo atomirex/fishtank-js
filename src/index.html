@@ -9,7 +9,7 @@
 </head>
 <body onload="start();">
     <canvas id="canvas"></canvas>
-    <video id="camera" autoplay playsinline></video>
+    
 
     <div id="controls">        
         <table>
@@ -27,7 +27,9 @@
             <tr><td class="td-entry"><input id="viewer-inter-eye-distance-mm" style="width: 48px" type="number" min="0" max="200" value="100" /></td><td>Inter eye distance (mm)</td></tr>
             <tr><td class="spacer-row"></td><td></td></tr>
             <tr><td class="td-entry"></td><td><input type="button" value="START" id="start-button"></td></tr>
+            <tr><td class="spacer-row"></td><td></td></tr>
         </table>
+        <video id="camera" autoplay playsinline style="visibility: visible; z-index: 5; width: 320px"></video>
     </div>
 </body>
 </html>
