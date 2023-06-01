@@ -26,7 +26,6 @@ class HeadTracker {
             cameraFov: DEG2RAD * 40,
             cameraAboveScreen: true,
             cameraVerticalAngle: 0.0,
-            cameraAspectRatio: 16.0 / 9.0,
         };
     }
 
@@ -61,7 +60,7 @@ class HeadTracker {
     
         let startTimeMs = performance.now();
     
-        if (video.currentTime !== this.lastVideoTime) {
+        if (this.mediaStream != null && video.currentTime !== this.lastVideoTime) {
             this.lastVideoTime = video.currentTime;
             const detections = this.faceDetector.detectForVideo(video, startTimeMs).detections;
     
@@ -86,9 +85,9 @@ class HeadTracker {
                         cameraFov, 
                         cameraAboveScreen,
                         cameraVerticalAngle,
-                        cameraAspectRatio,
                     } = this.settings;
 
+                    const cameraAspectRatio = video.videoWidth / video.videoHeight;
                     const cameraRadiansPerUnit = (cameraFov / cameraAspectRatio);
     
                     // Get the eyes! They're at 0 and 1!
