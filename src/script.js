@@ -353,7 +353,7 @@ export async function start() {
     for(var i=0; i<cubeDefs.length; i++) {
         const def = cubeDefs[i];
 
-        if(i == 0) {
+        if(i == 0) { // Nonsense temp hack to put torus knot where a cube used to be
             const torus = new THREE.Mesh( new THREE.TorusKnotGeometry(0.5, 0.17, 128, 16), reflective);
             scene.add( torus );
 

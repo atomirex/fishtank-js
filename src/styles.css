@@ -28,7 +28,7 @@ body {
 }
 
 .td-entry-category {
-    text-align: right;
+    text-align: left;
     font-size: 14px;
     font-weight: bold;
 }
@@ -38,6 +38,6 @@ body {
     padding: 16px;
     top: 32px;
     left: 32px;
-    width: 240px;
-    background-color: rgba(64, 64, 64, 0.35);
+    width: 320px;
+    background-color: rgba(24, 24, 24, 0.35);
 }
