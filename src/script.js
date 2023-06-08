@@ -3,12 +3,13 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 import {
     FaceDetector,
+    FaceLandmarker,
     FilesetResolver,
 } from "@mediapipe/tasks-vision";
 
 const DEG2RAD = (Math.PI * 2) / 360.0;
 
-class HeadTracker {
+class FaceDetectorHeadTracker {
     constructor(videoElement) {
         this.videoElement = videoElement; // Where the camera feed comes from
         this.faceDetector = null;
@@ -162,7 +163,187 @@ class HeadTracker {
     }
 }
 
-const headTracker = new HeadTracker(document.getElementById("camera"));
+class FaceLandmarkerHeadTracker {
+    constructor(videoElement) {
+        this.videoElement = videoElement; // Where the camera feed comes from
+        this.faceLandmarker = null;
+        this.running = false;
+        this.lastVideoTime = -1;
+
+        this.onDetected = null;
+
+        // Starting assumptions for all settings
+        this.settings = {
+            screenHeightMM: 180,
+            interEyeDistanceMM: 100, // Distance between the eyes
+
+            cameraDeviceId: null,
+            cameraFov: DEG2RAD * 40,
+            cameraAboveScreen: true,
+            cameraVerticalAngle: 0.0,
+        };
+    }
+
+    // This has to be called before starting
+    setCameraDeviceId(cameraDeviceId) {
+        this.settings.cameraDeviceId = cameraDeviceId;
+    }
+
+    setScreenHeightMM(screenHeightMM) {
+        this.settings.screenHeightMM = screenHeightMM;
+    }
+
+    setInterEyeDistanceMM(interEyeDistanceMM) {
+        this.settings.interEyeDistanceMM = interEyeDistanceMM;
+    }
+
+    setCameraFov(cameraFov) {
+        this.settings.cameraFov = cameraFov;
+    }
+
+    setCameraAboveScreen(cameraAboveScreen) {
+        this.settings.cameraAboveScreen = cameraAboveScreen;
+    }
+
+    async detect() {
+        if (!this.running) {
+            this.running = true;
+            await this.faceLandmarker.setOptions({ runningMode: "VIDEO" });
+        }
+
+        let video = this.videoElement;
+    
+        let startTimeMs = performance.now();
+    
+        if (this.mediaStream != null && video.currentTime !== this.lastVideoTime) {
+            this.lastVideoTime = video.currentTime;
+            const results = this.faceLandmarker.detectForVideo(video, startTimeMs);
+    
+            let found = null;
+
+            function getMeanForSetOfLandmarks(landmarks, pointRanges) {
+                let count = 0;
+                let result = {x: 0.0, y: 0.0, z: 0.0};
+
+                for(const connection of pointRanges) {
+                    for(var i=connection.start; i<connection.end; i++) {
+                        const l = landmarks[i];
+                        result.x += l.x;
+                        result.y += l.y;
+                        result.z += l.z;
+                        count++;
+                    }
+                }
+
+                if(count > 0) {
+                    result.x = result.x / count;
+                    result.y = result.y / count;
+                    result.z = result.z / count;
+                }
+
+                return result;
+            }
+
+            if(results && results.faceLandmarks) {
+                for(const landmarks of results.faceLandmarks) {
+                    // Yes it's an array of an array, with each sub array being a face
+                    // There isn't confidence, oddly
+
+                    const leftEye = getMeanForSetOfLandmarks(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS);
+
+                    const rightEye = getMeanForSetOfLandmarks(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS);
+
+                    // Evil hack to recreate a familiar structure
+                    found = {keypoints: [leftEye, rightEye ]};
+                }
+            }
+    
+            if (found != null) {
+                if (found.keypoints.length > 1) {
+                    const {
+                        screenHeightMM, 
+                        interEyeDistanceMM, 
+                        cameraFov, 
+                        cameraAboveScreen,
+                        cameraVerticalAngle,
+                    } = this.settings;
+
+                    const cameraAspectRatio = video.videoWidth / video.videoHeight;
+                    const cameraRadiansPerUnit = (cameraFov / cameraAspectRatio);
+    
+                    // Get the eyes! They're at 0 and 1!
+                    const l = found.keypoints[0];
+                    const r = found.keypoints[1];
+    
+                    const dx = (l.x - r.x) * cameraAspectRatio;
+                    const dy = l.y - r.y;
+                    const interEyeDistance = Math.sqrt((dx * dx) + (dy * dy));
+    
+                    const angle = cameraRadiansPerUnit * interEyeDistance / 2.0;
+    
+                    const z = ((interEyeDistanceMM / 2.0) / Math.tan(angle)) / screenHeightMM;
+    
+                    const cx = ((l.x + r.x) / 2.0) * cameraAspectRatio;
+                    const cy = (l.y + r.y) / 2.0;
+    
+                    const x = Math.sin(cameraRadiansPerUnit * (cx - (0.5 * cameraAspectRatio))) * z;
+                    const relativeVerticalAngle = (cy - 0.375) * cameraRadiansPerUnit;
+    
+                    let y = (cameraAboveScreen ? -1.0 : 1.0) * ((Math.sin(relativeVerticalAngle + cameraVerticalAngle)) * z);
+                    
+                    if(this.onDetected != null) {
+                        this.onDetected(x, y, z);
+                    }
+                }
+            }
+        }
+    
+        var that = this;
+        window.requestAnimationFrame(function() {
+            that.detect();
+        });   
+    }
+    
+    async start() {
+        //
+        // This totally isn't production ready, largely because of this section.
+        //
+        // Some much cleaner disposal/recreation is necessary
+        //
+        var that = this;
+
+        const visionTasks = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+
+        this.faceLandmarker = await FaceLandmarker.createFromOptions(visionTasks, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                delegate: "GPU"
+            },
+            runningMode: "IMAGE",
+            numFaces: 1,
+        });
+
+        const constraints = {
+            video: (that.settings.cameraDeviceId == null ? true : {deviceId: that.settings.cameraDeviceId})
+        };
+    
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(function (stream) {
+                that.mediaStream = stream;
+
+                that.videoElement.srcObject = stream;
+                that.videoElement.addEventListener("loadeddata", function() {
+                    that.detect();
+                });
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }
+}
+
+const headTracker = new FaceLandmarkerHeadTracker(document.getElementById("camera"));
 
 class FishtankCamera extends THREE.PerspectiveCamera {
     constructor(fov = 50, aspect = 1, near = 0.1, far = 2000) {
